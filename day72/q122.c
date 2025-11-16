@@ -11,28 +11,21 @@ File created successfully! Data written to info.txt
 #include <stdio.h>
 
 int main() {
-    char n[100];
-    int a;
+    char l[256];
     FILE *f;
     
-    printf("Enter your name: ");
-    scanf("%[^\n]", n);
-    
-    printf("Enter your age: ");
-    scanf("%d", &a);
-    
-    f = fopen("info.txt", "w");
+    f = fopen("info.txt", "r");
     
     if (f == NULL) {
         printf("Error! Could not open file.\n");
         return 1;
     }
     
-    fprintf(f, "Name: %s, Age: %d\n", n, a);
+    while (fgets(l, sizeof(l), f) != NULL) {
+        printf("%s", l);
+    }
     
     fclose(f);
-    
-    printf("File created successfully! Data written to info.txt\n");
     
     return 0;
 }
