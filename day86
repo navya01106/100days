@@ -1,0 +1,31 @@
+//Q136: Use enum to represent menu choices (ADD, SUBTRACT, MULTIPLY) and perform operations using switch.
+
+/*
+Sample Test Cases:
+Input 1:
+ADD 10 20
+Output 1:
+30
+
+*/
+#include <stdio.h>
+#include <string.h>
+
+enum M { ADD, SUBTRACT, MULTIPLY };
+
+int main() 
+{
+    char a[20];
+    int b, c;
+    scanf("%s %d %d", a, &b, &c);
+    enum M d;
+    if (strcmp(a, "ADD") == 0) d = ADD;
+    else if (strcmp(a, "SUBTRACT") == 0) d = SUBTRACT;
+    else d = MULTIPLY;
+    switch (d) {
+        case ADD: printf("%d\n", b + c); break;
+        case SUBTRACT: printf("%d\n", b - c); break;
+        case MULTIPLY: printf("%d\n", b * c); break;
+    }
+    return 0;
+}
