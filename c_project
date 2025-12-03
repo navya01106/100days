@@ -1,0 +1,286 @@
+//project to count calories and store your meals and food items
+#include <stdio.h>
+#include <string.h>
+
+
+#define MAX_FOODS 50
+#define MAX_MEALS 100
+
+// Structure to store food information
+struct Food {
+    char name[30];
+    int calories;
+};
+
+// Structure to store meal logs
+struct Meal {
+    char food_name[30];
+    int quantity;
+};
+
+struct Food foods[MAX_FOODS];
+struct Meal meals[MAX_MEALS];
+int food_count = 0;
+int meal_count = 0;
+int daily_goal = 2000;
+
+// Function to load default foods
+void load_default_foods() {
+    strcpy(foods[0].name, "Apple");
+    foods[0].calories = 95;
+    strcpy(foods[1].name, "Banana");
+    foods[1].calories = 105;
+    strcpy(foods[2].name, "Chicken");
+    foods[2].calories = 165;
+    strcpy(foods[3].name, "Rice");
+    foods[3].calories = 200;
+    strcpy(foods[4].name, "Egg");
+    foods[4].calories = 70;
+    strcpy(foods[5].name, "Bread");
+    foods[5].calories = 80;
+    strcpy(foods[6].name, "Milk");
+    foods[6].calories = 150;
+    strcpy(foods[7].name, "Salad");
+    foods[7].calories = 50;
+    strcpy(foods[8].name, "Pizza");
+    foods[8].calories = 285;
+    strcpy(foods[9].name, "Burger");
+    foods[9].calories = 354;
+    food_count = 10;
+}
+
+// Function to save foods to file
+void save_foods_to_file() 
+{
+    FILE *file = fopen("foods.txt", "w");
+    
+    if (file == NULL) 
+    {
+        printf("Error: Could not save foods\n");
+        return;
+    }
+    
+    
+    fprintf(file, "%d\n", food_count);
+    
+   
+    for (int i = 0; i < food_count; i++) {
+        fprintf(file, "%s %d\n", foods[i].name, foods[i].calories);
+    }
+    
+    fclose(file);
+}
+
+// Function to load foods from file
+void load_foods_from_file() {
+    FILE *file = fopen("foods.txt", "r");
+    
+    // If file doesn't exist, load defaults
+    if (file == NULL) {
+        printf("No saved foods found. Loading defaults...\n");
+        load_default_foods();
+        save_foods_to_file(); // Save defaults to file
+        return;
+    }
+    
+    
+    fscanf(file, "%d", &food_count);
+    
+    // Read each food
+    for (int i = 0; i < food_count; i++) {
+        fscanf(file, "%s %d", foods[i].name, &foods[i].calories);
+    }
+    
+    fclose(file);
+    printf("Loaded %d foods from file.\n", food_count);
+}
+
+// Function to save meals to file
+void save_meals_to_file() 
+{
+    FILE *file = fopen("meals.txt", "w");
+    
+    if (file == NULL) 
+    {
+        printf("Error: Could not save meals\n");
+        return;
+    }
+    
+    fprintf(file, "%d\n", meal_count);
+    
+    for (int i = 0; i < meal_count; i++) {
+        fprintf(file, "%s %d\n", meals[i].food_name, meals[i].quantity);
+    }
+    
+    fclose(file);
+}
+
+// Function to load meals from file
+void load_meals_from_file() {
+    FILE *file = fopen("meals.txt", "r");
+    
+    if (file == NULL) {
+        meal_count = 0;
+        return;
+    }
+    
+    fscanf(file, "%d", &meal_count);
+    
+    for (int i = 0; i < meal_count; i++) {
+        fscanf(file, "%s %d", meals[i].food_name, &meals[i].quantity);
+    }
+    
+    fclose(file);
+}
+
+// Function to add a new food item
+void add_food() {
+    printf("\n=== Add New Food ===\n");
+    printf("Enter food name: ");
+    scanf("%s", foods[food_count].name);
+    printf("Enter calories: ");
+    scanf("%d", &foods[food_count].calories);
+    
+    food_count++;
+    save_foods_to_file(); 
+    printf("Food added and saved!\n");
+}
+
+// Function to show all foods
+void show_foods() {
+    printf("\n=== Food List ===\n");
+    if (food_count == 0) {
+        printf("No foods yet. Add some first!\n");
+        return;
+    }
+    
+    for (int i = 0; i < food_count; i++) {
+        printf("%d. %s - %d calories\n", i + 1, foods[i].name, foods[i].calories);
+    }
+}
+
+// Function to log a meal
+void log_food() {
+    printf("\n=== Log Your Meal ===\n");
+    show_foods();
+    
+    if (food_count == 0) {
+        return;
+    }
+    
+    int choice, qty;
+    printf("\nEnter food number: ");
+    scanf("%d", &choice);
+    
+    if (choice < 1 || choice > food_count) {
+        printf("Invalid choice!\n");
+        return;
+    }
+    
+    printf("Enter quantity: ");
+    scanf("%d", &qty);
+    
+    strcpy(meals[meal_count].food_name, foods[choice - 1].name);
+    meals[meal_count].quantity = qty;
+    meal_count++;
+    
+    save_meals_to_file(); // Save immediately
+    printf("Meal logged and saved!\n");
+}
+
+// Function to calculate total calories eaten
+int get_total_calories() {
+    int total = 0;
+    
+    for (int i = 0; i < meal_count; i++) {
+        // Find the calories for this food
+        for (int j = 0; j < food_count; j++) {
+            if (strcmp(meals[i].food_name, foods[j].name) == 0) {
+                total += foods[j].calories * meals[i].quantity;
+                break;
+            }
+        }
+    }
+    
+    return total;
+}
+
+// Function to show your progress
+void show_progress() {
+    printf("\n=== Your Progress ===\n");
+    printf("Daily Goal: %d calories\n", daily_goal);
+    
+    int total = get_total_calories();
+    printf("Total Eaten: %d calories\n", total);
+    
+    int remaining = daily_goal - total;
+    printf("Remaining: %d calories\n", remaining);
+    
+    if (remaining > 0) {
+        printf("You can still eat %d more calories!\n", remaining);
+    } else if (remaining < 0) {
+        printf("You're over by %d calories!\n", -remaining);
+    } else {
+        printf("Perfect! You hit your goal!\n");
+    }
+}
+
+// Function to change daily goal
+void change_goal() {
+    printf("\n=== Set Your Goal ===\n");
+    printf("Current goal: %d calories\n", daily_goal);
+    printf("Enter new goal: ");
+    scanf("%d", &daily_goal);
+    printf("Goal updated!\n");
+}
+
+// Function to reset today's meals
+void reset_meals() {
+    meal_count = 0;
+    save_meals_to_file(); // Save the empty meal list
+    printf("Today's meals cleared and saved!\n");
+}
+
+// Main program
+int main() {
+    printf("Welcome to Simple Calorie Counter!\n");
+    
+    load_foods_from_file();
+    load_meals_from_file();
+    
+    int choice;
+    
+    while (1) {
+        printf("\n MENU \n");
+        printf("1. Add new food\n");
+        printf("2. View all foods\n");
+        printf("3. Log a meal\n");
+        printf("4. Show my progress\n");
+        printf("5. Change daily goal\n");
+        printf("6. Reset today's meals\n");
+        printf("7. Exit\n");
+        printf("Choose an option: ");
+        scanf("%d", &choice);
+        
+        if (choice == 1) {
+            add_food();
+        } else if (choice == 2) {
+            show_foods();
+        } else if (choice == 3) {
+            log_food();
+        } else if (choice == 4) {
+            show_progress();
+        } else if (choice == 5) {
+            change_goal();
+        } else if (choice == 6) {
+            reset_meals();
+        } else if (choice == 7) {
+            printf("Goodbye! All data saved.\n");
+            break;
+        } else {
+            printf("Invalid choice! Try again.\n");
+        }
+    }
+    
+    return 0;
+}
